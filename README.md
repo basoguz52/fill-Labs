@@ -28,3 +28,7 @@ npm install
 ```sh
 npm run dev
 ```
+
+## Access the Localhost
+
+Visit [localhost:3000](http://localhost:3000/) to access the application locally.
