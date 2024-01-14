@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// User struct represents the user model with ID, Name, and Age fields
 type User struct {
 	ID   uint   `json:"id" gorm:"primaryKey"`
 	Name string `json:"name"`
@@ -21,53 +22,42 @@ var db *gorm.DB
 var err error
 
 func main() {
-	// SQLite veritabanına bağlan
+	// Connect to the SQLite database
 	db, err = gorm.Open(sqlite.Open("users.db"), &gorm.Config{})
 	if err != nil {
 		fmt.Println("Database connection error:", err)
 		return
 	}
 
-	// Kullanıcı tablosunu oluştur
+	// Create the User table
 	err := db.AutoMigrate(&User{})
 	if err != nil {
 		fmt.Println(err)
 	}
-	// Gin router oluştur
+	// Create a Gin router
 	router := gin.Default()
 
+	// Configure CORS
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"http://localhost:3000"}
 	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept"}
 	router.Use(cors.New(config))
 
-	// Tüm kullanıcıları getir
 	router.GET("/users", getAllUsers)
-
-	// Belirli bir kullanıcıyı getir
 	router.GET("/users/:id", getUserByID)
-
-	// Yeni kullanıcı oluştur
 	router.POST("/users", createUser)
-
-	// Belirli bir kullanıcıyı güncelle
 	router.PUT("/users/:id", updateUser)
-
-	// Belirli bir kullanıcıyı sil
 	router.DELETE("/users/:id", deleteUser)
 
-	// API'yi 8080 portunda başlat
 	router.Run(":8080")
 }
 
-// Tüm kullanıcıları getir
 func getAllUsers(c *gin.Context) {
 	var users []User
 	db.Find(&users)
 	c.JSON(http.StatusOK, users)
 }
 
-// Belirli bir kullanıcıyı getir
 func getUserByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -85,7 +75,6 @@ func getUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// Yeni kullanıcı oluştur
 func createUser(c *gin.Context) {
 	var user User
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -97,7 +86,6 @@ func createUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
-// Belirli bir kullanıcıyı güncelle
 func updateUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -121,7 +109,6 @@ func updateUser(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// Belirli bir kullanıcıyı sil
 func deleteUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
